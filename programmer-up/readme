@@ -7,13 +7,13 @@ gcc -c b.c -o b.o
 ld a.o b.o -o a -e _main -lSystem
 
 
-objdump -d a.o
+objdump -d a.o // 转为汇编代码
 objdump -d a
 
 objdump -t a.o 
 objdump -t b.o 
 objdump -t a
 
-
+objdump -all-headers
 
 
