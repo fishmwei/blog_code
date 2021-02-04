@@ -28,6 +28,7 @@ void *thread_func(void *arg)
         return NULL;
     }
 
+
     thread_args_t *pthread_args = (thread_args_t *)arg;
     char recvBuf[1024];
     while (1)
@@ -42,7 +43,7 @@ void *thread_func(void *arg)
 
         if (recvLen == 0)
         {
-            perror("len error");
+            //perror("len error");//peer has closed
             close(pthread_args->accept_fd);
             break;
         }
@@ -103,13 +104,15 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (fd < 0)
     {
         perror("socket error");
         return -1;
     }
 
+
+    printf("get socket %d\r\n", fd);
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -139,7 +142,7 @@ int main(int argc, char *argv[])
             continue;
         }
         
-        printf("accept client %d, addr: %s\r\n", accept_fd, inet_ntoa(client_addr.sin_addr));
+        printf("accept client %d, addr: %s（%d）\r\n", accept_fd, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
         thread_args_t *thread_args = (thread_args_t *)malloc(sizeof(thread_args_t));
         thread_args->accept_fd = accept_fd;
         memcpy(&thread_args->client_addr, &client_addr, len);

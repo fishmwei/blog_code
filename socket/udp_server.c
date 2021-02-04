@@ -103,13 +103,15 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (fd < 0)
     {
         perror("socket error");
         return -1;
     }
 
+
+    printf("get socket %d\r\n", fd);
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;

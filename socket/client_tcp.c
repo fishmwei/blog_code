@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <unistd.h>// close
 #include <getopt.h>
+#include <string.h>
 
 const struct option long_options[] =
 {
@@ -55,13 +56,15 @@ int main(int argc, char *argv[])
     } 
 
     //uint16_t port = 5001;
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (fd < 0)
     {
         perror("socket error");
         return -1;
     }
 
+
+    printf("get socket %d\r\n", fd);
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -83,6 +86,10 @@ int main(int argc, char *argv[])
             break;
         }
         
+        if (strcmp(sendBuf, "quit") == 0 ) {
+            break;
+        }
+
         size_t sendLen = send(fd, sendBuf, strlen(sendBuf), 0);
         if (sendLen < 0)
         {
@@ -90,9 +97,10 @@ int main(int argc, char *argv[])
             return -1;
         }
         
-        char recvBuf[1024];
+        char recvBuf[2048];
         char *pRecvBuf = recvBuf;
         size_t bufLen = sizeof(recvBuf);
+        bufLen = 2048;
         size_t recvTotal = 0;
         while (recvTotal < sendLen)
         {

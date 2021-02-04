@@ -67,7 +67,7 @@ void *thread_func(void *arg)
     return NULL;
 }
 
-
+#define CONNECT_ENABLE (1)
 int main(int argc, char *argv[])
 {
     int opt;
@@ -103,13 +103,14 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (fd < 0)
     {
         perror("socket error");
         return -1;
     }
 
+    printf("get socket %d\r\n", fd);
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -123,14 +124,26 @@ int main(int argc, char *argv[])
     other_addr.sin_addr.s_addr = 0;
     other_addr.sin_port = htons(port+1);
 
+#if CONNECT_ENABLE
+    // 随机端口号
+    if (connect(fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
+        perror("connect error");
+        return -1;
+    }
+#else
+    // 绑定端口号
     if (bind(fd, (struct sockaddr *)&other_addr, sizeof(other_addr)) < 0)
     {
         perror("bind error");
         return -1;
     }
+#endif
 
     char recvBuf[1024];
     socklen_t other_addr_len = sizeof(other_addr);
+
+    printf("ready to enter msg:\r\n");
     while (1)
     {
         int ret = scanf("%s", recvBuf);
@@ -144,9 +157,18 @@ int main(int argc, char *argv[])
         {
             break;
         }
-        int send_len = sendto(fd, recvBuf, strlen(recvBuf), 0, (struct sockaddr *)&server_addr, other_addr_len);
 
+        #if CONNECT_ENABLE
+        // 使用了connect， 只能用send发送了
+        int send_len = send(fd, recvBuf, strlen(recvBuf), 0);
+        ssize_t recv_len = recv(fd, recvBuf, 1024, 0);
+
+        #else
+        
+        int send_len = sendto(fd, recvBuf, strlen(recvBuf), 0, (struct sockaddr *)&server_addr, other_addr_len);
         ssize_t recv_len = recvfrom(fd, recvBuf, 1024, 0, (struct sockaddr *)&server_addr, &other_addr_len);
+        
+        #endif
         if (recv_len < 0) 
         {
             perror("recv error");
