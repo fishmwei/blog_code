@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     }
 
 
-    printf("name : ~/Documents/code/GitHub/blog_code/linux-kernel/%s, mode : %d, size : %d, user id : %d\n", direntp->d_name, sb.st_mode, sb.st_size, sb.st_uid);
+    printf("name : ~/Documents/code/GitHub/blog_code/linux-kernel/%s, mode : %#o, size : %d, user id : %d\n", direntp->d_name, sb.st_mode, sb.st_size, sb.st_uid);
 
 
   }
